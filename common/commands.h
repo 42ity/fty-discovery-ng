@@ -10,6 +10,29 @@ static constexpr const char* Channel = "discovery";
 
 // =====================================================================================================================
 
+class Protocol : public pack::Node
+{
+public:
+    enum class Type
+    {
+        Unknown,
+        Powercom,
+        XML_pdc,
+        SNMP
+    };
+
+    pack::Enum<Type> protocol = FIELD("protocol");
+    pack::Int32List  ports    = FIELD("ports");
+
+public:
+    using pack::Node::Node;
+    META(Protocol, protocol, ports);
+};
+
+std::ostream& operator<<(std::ostream& ss, Protocol::Type value);
+std::istream& operator>>(std::istream& ss, Protocol::Type& value);
+
+
 namespace commands::protocols {
     static constexpr const char* Subject = "protocols";
 
@@ -28,25 +51,6 @@ namespace commands::protocols {
     class In : public pack::Node
     {
     public:
-        class Protocol : public pack::Node
-        {
-        public:
-            enum class Type
-            {
-                Unknown,
-                Powercom,
-                XML_pdc,
-                SNMP
-            };
-
-            pack::Enum<Type> protocol = FIELD("protocol");
-            pack::Int32List  ports    = FIELD("ports");
-
-        public:
-            using pack::Node::Node;
-            META(Protocol, protocol, ports);
-        };
-
         pack::String               address   = FIELD("address");
         pack::ObjectList<Protocol> protocols = FIELD("protocols"); // optional
 
@@ -55,13 +59,10 @@ namespace commands::protocols {
         META(In, address, protocols);
     };
 
-    std::ostream& operator<<(std::ostream& ss, In::Protocol::Type value);
-    std::istream& operator>>(std::istream& ss, In::Protocol::Type& value);
-
     class Return : public pack::Node
     {
     public:
-        pack::String protocol = FIELD("protocol");
+        Protocol     protocol = FIELD("protocol");
         pack::UInt32 port     = FIELD("port");
         // pack::Bool   ignored   = FIELD("ignored");
         pack::Bool reachable = FIELD("reachable");
@@ -118,7 +119,7 @@ namespace commands {
 
     public:
         pack::String address  = FIELD("address");
-        pack::String protocol = FIELD("protocol");
+        Protocol     protocol = FIELD("protocol");
         pack::UInt32 port     = FIELD("port");
         Settings     settings = FIELD("protocol_settings");
 
