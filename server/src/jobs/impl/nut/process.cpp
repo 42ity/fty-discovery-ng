@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 namespace fty::impl::nut {
+
 Process::Process(const std::string& protocol)
     : m_protocol(protocol)
 {
@@ -95,7 +96,6 @@ Expected<void> Process::setupPowercom(const std::string& address)
 
 Expected<void> Process::init(const std::string& address, uint16_t port)
 {
-    std::string driver;
     if (m_protocol == "nut_snmp") {
         if (auto ret = setupSnmp(address, port); !ret) {
             return unexpected(ret.error());
@@ -182,11 +182,11 @@ Expected<void> Process::setCredentialId(const std::string& credential)
 
             if (auto credV3 = secw::Snmpv3::tryToCast(secCred)) {
                 log_debug("Init from wallet for snmp v3");
-                
+
                 m_process->setEnvVar("SU_VAR_VERSION", "v3");
                 m_process->addArgument("-x");
                 m_process->addArgument(fmt::format("snmp_version={}", "v3"));
-                
+
                 if (auto lvl = levelStr(credV3->getSecurityLevel())) {
                     m_process->setEnvVar("SU_VAR_SECLEVEL", *lvl);
                     m_process->addArgument("-x");
@@ -195,15 +195,15 @@ Expected<void> Process::setCredentialId(const std::string& credential)
                 m_process->setEnvVar("SU_VAR_SECNAME", credV3->getSecurityName());
                 m_process->addArgument("-x");
                 m_process->addArgument(fmt::format("secName={}", credV3->getSecurityName()));
-                
+
                 m_process->setEnvVar("SU_VAR_AUTHPASSWD", credV3->getAuthPassword());
                 m_process->addArgument("-x");
                 m_process->addArgument(fmt::format("authPassword={}", credV3->getAuthPassword()));
-                
+
                 m_process->setEnvVar("SU_VAR_PRIVPASSWD", credV3->getPrivPassword());
                 m_process->addArgument("-x");
                 m_process->addArgument(fmt::format("privPassword={}", credV3->getPrivPassword()));
-                
+
                 if (auto prot = authProtStr(credV3->getAuthProtocol())) {
                     m_process->setEnvVar("SU_VAR_AUTHPROT", *prot);
                     m_process->addArgument("-x");
