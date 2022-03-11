@@ -55,7 +55,8 @@ Expected<Message> MessageBus::send(const std::string& queue, const Message& msg)
     }
     msg.meta.from = m_actorName;
     try {
-        Message m(m_bus->request(queue, msg.toMessageBus(), 10));
+        int timeout = 60; // seconds
+        Message m(m_bus->request(queue, msg.toMessageBus(), timeout));
         if (m.meta.status == Message::Status::Error) {
             return unexpected(*m.userData.decode<std::string>());
         }
