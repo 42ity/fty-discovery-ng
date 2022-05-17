@@ -46,7 +46,7 @@ Expected<void> Process::setupSnmp(const std::string& address, uint16_t port)
         }));
         // clang-format on
         m_process->setEnvVar("NUT_STATEPATH", m_root);
-        m_process->setEnvVar("MIBDIRS", Config::instance().mibDatabase);
+        m_process->setEnvVar("MIBDIRS", Config::instance().mibDatabase.value());
         return {};
     } else {
         return unexpected(path.error());
@@ -337,7 +337,12 @@ Expected<std::string> Process::run() const
     }
 
     if (auto pid = m_process->run()) {
-        if (auto stat = m_process->wait(); *stat == 0) {
+        auto stat = m_process->wait(180000); //3 minutes
+        if (!stat) {
+            logDebug("Run failed:\n{}", stat.error());
+            return unexpected(stat.error());
+        }
+        else if (*stat == 0) {
             return m_process->readAllStandardOutput();
         } else {
             std::string stdError = m_process->readAllStandardError();
@@ -356,9 +361,9 @@ Expected<std::string> Process::run() const
             return unexpected(stdError);
         }
     } else {
-        log_error("Run error: %s", pid.error().c_str());
+        logError("Run error: {}", pid.error());
         return unexpected(pid.error());
     }
 }
 
-} // namespace fty::impl::nut
+} // namespace fty::disco::impl::nut
