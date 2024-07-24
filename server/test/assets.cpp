@@ -1,5 +1,10 @@
 #include "test-common.h"
 #include <fty/process.h>
+#include <fty_log.h>
+#include <iostream>
+#include <iomanip>
+#include <fstream>
+
 
 TEST_CASE("Assets / Empty request", "[assets]")
 {
@@ -38,12 +43,17 @@ TEST_CASE("Assets / Test output", "[assets]")
         "--data-dir=assets",
         "--agent-udpv4-endpoint=127.0.0.1:1161",
         "--logging-method=file:.snmpsim.txt",
-        "--variation-modules-dir=assets"
+        "--variation-modules-dir=assets",
+        "--process-user=nobody",
+        "--process-group=nogroup"
         //"--log-level=error"
     });
     // clang-format on
 
     if (auto pid = proc.run()) {
+        // Wait a moment for snmpsim init
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
         fty::disco::Message msg = Test::createMessage(fty::disco::commands::assets::Subject);
 
         fty::disco::commands::assets::In in;
