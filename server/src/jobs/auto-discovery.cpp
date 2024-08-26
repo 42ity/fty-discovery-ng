@@ -364,6 +364,24 @@ void AutoDiscovery::scan(AutoDiscovery* autoDiscovery, const std::string& ipAddr
                     extLogicalAsset.append("logical_asset", (autoDiscovery->m_params.aux.parent == "0") ?
                         pack::String(std::string("")) : autoDiscovery->m_params.aux.parent);
                     extLogicalAsset.append("read_only", "false");
+                    // Add location type in ext if necessary
+                    if (autoDiscovery->m_params.aux.parent != "0") {
+                        auto& extLocationType = sensor.ext.append();
+                        extLocationType.append("location_type", "device");
+                        extLocationType.append("read_only", "true");
+                    }
+                    // Add sensor function in ext
+                    auto& extSensorFunction = sensor.ext.append();
+                    extSensorFunction.append("sensor_function", "input");   // input by default (not modifiable)
+                    extSensorFunction.append("read_only", "false");
+                    // Add calibration offset humidity in ext
+                    auto& extCalibrationOffsetH = sensor.ext.append();
+                    extCalibrationOffsetH.append("calibration_offset_h", "0");
+                    extCalibrationOffsetH.append("read_only", "false");
+                    // Add calibration offset temperature in ext
+                    auto& extCalibrationOffsetT = sensor.ext.append();
+                    extCalibrationOffsetT.append("calibration_offset_t", "0");
+                    extCalibrationOffsetT.append("read_only", "false");
                     // Add parent name in ext
                     auto& extParentName = sensor.ext.append();
                     extParentName.append("parent_name.1", assetNameCreated);
