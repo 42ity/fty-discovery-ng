@@ -299,8 +299,12 @@ void Assets::addSensors(const DeviceInfo& deviceInfo, int& indexSensor,
                     return map.contains("name");
                 });
                 index != -1) {
-                sensor.ext[index]["name"] = externalName;
-                sensor.ext[index]["read_only"] = "false";
+                if (index < 0) {
+                    logError("Sensor index is out of range ({})", index);
+                    continue;
+                }
+                sensor.ext[size_t(index)]["name"] = externalName;
+                sensor.ext[size_t(index)]["read_only"] = "false";
             }
         }
         addAssetVal(sensor, "model", sensorModel);
@@ -543,8 +547,13 @@ void Assets::enrichAsset(commands::assets::Return& asset)
                 return map.contains("name");
             });
             index != -1) {
-            asset.asset.ext[index]["name"] = name;
-            asset.asset.ext[index]["read_only"] = "false";
+            if (index < 0) {
+                logWarn("Sensor index is out of range ({})", index);
+            }
+            else {
+                asset.asset.ext[size_t(index)]["name"] = name;
+                asset.asset.ext[size_t(index)]["read_only"] = "false";
+            }
         }
     }
     // endpoint.1 attributes (monitoring)
