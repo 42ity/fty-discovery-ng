@@ -32,6 +32,8 @@ etn_target(shared ${PROJECT_NAME}-rest
         ${CMAKE_INSTALL_FULL_LIBDIR}
 )
 
+set_target_properties(${PROJECT_NAME}-rest PROPERTIES SOVERSION ${PROJECT_VERSION_MAJOR})
+
 ########################################################################################################################
 
 # mappings for tntnet -> etc/
