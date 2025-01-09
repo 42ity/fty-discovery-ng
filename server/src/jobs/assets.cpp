@@ -19,8 +19,8 @@
 #include "impl/nut/mapper.h"
 #include "impl/nut/process.h"
 #include "impl/ping.h"
-#include "impl/uuid.h"
 #include <fty/string-utils.h>
+#include <asset/asset-helpers.h>
 
 namespace fty::disco::job {
 
@@ -474,13 +474,15 @@ void Assets::enrichAsset(commands::assets::Return& asset)
     // uuid attribute
     {
         auto manufacturer = getAssetVal(asset.asset, "manufacturer");
-        auto model = getAssetVal(asset.asset, "model");
         auto serial = getAssetVal(asset.asset, "serial_no");
-        std::string uuid; //empty
-        if (manufacturer && model && serial) {
-            uuid = impl::generateUUID(*manufacturer, *model, *serial);
+        if (manufacturer && serial) {
+            fty::asset::AssetFilter assetFilter{*manufacturer, *serial};
+            auto uuidAsset = fty::asset::generateUUID(assetFilter);
+            addAssetVal(asset.asset, "uuid", uuidAsset.uuid, false);
         }
-        addAssetVal(asset.asset, "uuid", uuid, false);
+        else {
+            addAssetVal(asset.asset, "uuid", "", false);
+        }
     }
 
     // max_power attribute
