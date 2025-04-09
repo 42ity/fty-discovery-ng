@@ -24,7 +24,7 @@ namespace fty::disco::job {
 
 struct DeviceInfo
 {
-    int         indexDevice;
+    int         indexDevice{0};
     std::string deviceSerial;
     std::string type;
 };

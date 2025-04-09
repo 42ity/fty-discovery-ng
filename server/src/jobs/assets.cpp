@@ -455,10 +455,11 @@ void Assets::enrichAsset(commands::assets::Return& asset)
         }
     }
 
+    // device subtype exceptions
     if (asset.asset.subtype == "pdu") {
         asset.asset.subtype = "epdu";
     }
-    if (asset.asset.subtype == "ats") {
+    else if (asset.asset.subtype == "ats") {
         asset.asset.subtype = "sts";
     }
 
@@ -475,14 +476,17 @@ void Assets::enrichAsset(commands::assets::Return& asset)
     {
         auto manufacturer = getAssetVal(asset.asset, "manufacturer");
         auto serial = getAssetVal(asset.asset, "serial_no");
-        if (manufacturer && serial) {
-            fty::asset::AssetFilter assetFilter{*manufacturer, *serial};
-            auto uuidAsset = fty::asset::generateUUID(assetFilter);
-            addAssetVal(asset.asset, "uuid", uuidAsset.uuid, false);
-        }
-        else {
-            addAssetVal(asset.asset, "uuid", "", false);
-        }
+        auto macAddress = getAssetVal(asset.asset, "mac_address");
+        auto ipAddress = getAssetVal(asset.asset, "ip.1");
+
+        fty::asset::AssetFilter assetFilter{
+            manufacturer ? *manufacturer : "",
+            serial ? *serial : "",
+            macAddress ? *macAddress : "",
+            ipAddress ? *ipAddress : ""
+        };
+        fty::asset::Uuid uuid = fty::asset::generateUUID(assetFilter);
+        addAssetVal(asset.asset, "uuid", uuid.uuid, false);
     }
 
     // max_power attribute
@@ -517,7 +521,7 @@ void Assets::enrichAsset(commands::assets::Return& asset)
         }
     }
 
-    // epdu daisy_chaine attribut
+    // epdu daisy_chain attribute (name updated)
     if (asset.asset.subtype == "epdu") {
         std::string daisyChain = "0";
         if (!asset.subAddress.empty()) {
@@ -541,6 +545,7 @@ void Assets::enrichAsset(commands::assets::Return& asset)
             name = ss.str();
         }
     }
+
     logTrace("Set asset name={}", name);
     if (!getAssetVal(asset.asset, "name")) {
         addAssetVal(asset.asset, "name", name, false);
@@ -558,20 +563,23 @@ void Assets::enrichAsset(commands::assets::Return& asset)
             }
         }
     }
+
     // endpoint.1 attributes (monitoring)
-    addAssetVal(asset.asset, "endpoint.1.protocol", m_params.protocol, false);
-    addAssetVal(asset.asset, "endpoint.1.port", std::to_string(m_params.port), false);
-    std::string keyCredentialId = std::string("endpoint.1.") + m_params.protocol.value() + std::string(".secw_credential_id");
-    addAssetVal(asset.asset, keyCredentialId, m_params.settings.credentialId, false);
-    addAssetVal(asset.asset, "endpoint.1.sub_address", asset.subAddress, false);
-    addAssetVal(asset.asset, "endpoint.1.status.operating", "IN_SERVICE", false);
-    addAssetVal(asset.asset, "endpoint.1.status.error_msg", "", false);
-    if (m_params.protocol == "nut_snmp") {
-        if (m_params.settings.community.hasValue()) {
-            addAssetVal(asset.asset, "endpoint.1.nut_snmp.community", m_params.settings.community, false);
-        }
-        if (m_params.settings.mib.hasValue()) {
-            addAssetVal(asset.asset, "endpoint.1.nut_snmp.MIB", m_params.settings.mib, false);
+    {
+        addAssetVal(asset.asset, "endpoint.1.protocol", m_params.protocol, false);
+        addAssetVal(asset.asset, "endpoint.1.port", std::to_string(m_params.port), false);
+        std::string keyCredentialId = std::string("endpoint.1.") + m_params.protocol.value() + std::string(".secw_credential_id");
+        addAssetVal(asset.asset, keyCredentialId, m_params.settings.credentialId, false);
+        addAssetVal(asset.asset, "endpoint.1.sub_address", asset.subAddress, false);
+        addAssetVal(asset.asset, "endpoint.1.status.operating", "IN_SERVICE", false);
+        addAssetVal(asset.asset, "endpoint.1.status.error_msg", "", false);
+        if (m_params.protocol == "nut_snmp") {
+            if (m_params.settings.community.hasValue()) {
+                addAssetVal(asset.asset, "endpoint.1.nut_snmp.community", m_params.settings.community, false);
+            }
+            if (m_params.settings.mib.hasValue()) {
+                addAssetVal(asset.asset, "endpoint.1.nut_snmp.MIB", m_params.settings.mib, false);
+            }
         }
     }
 
