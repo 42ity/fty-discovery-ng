@@ -488,18 +488,19 @@ void AutoDiscovery::scan(AutoDiscovery* autoDiscovery, const std::string& ipAddr
 
 bool AutoDiscovery::scanCheck(AutoDiscovery* autoDiscovery)
 {
-    if (!autoDiscovery) return true;
-
-    static size_t previousCounter = 0;
-    static std::chrono::steady_clock::time_point start {};
-    static bool isBlockingDetected = false;
+    if (!autoDiscovery) {
+        return true;
+    }
 
     auto countPendingTasks = autoDiscovery->m_poolScan->getCountPendingTasks();
     auto countActiveTasks = autoDiscovery->m_poolScan->getCountActiveTasks();
 
     logDebug("AutoDiscovery scanCheck: ================ status={}, pending tasks={}, active tasks={})",
         autoDiscovery->m_statusDiscovery.status, countPendingTasks, countActiveTasks);
-    if ((autoDiscovery->m_stop && countActiveTasks == 0) || (countPendingTasks == 0 && countActiveTasks == 0)) {
+
+    if ((autoDiscovery->m_stop && countActiveTasks == 0)
+        || (countPendingTasks == 0 && countActiveTasks == 0)
+    ) {
         std::lock_guard<std::mutex> lock(autoDiscovery->m_mutex);
         if (autoDiscovery->m_stop) {
             autoDiscovery->m_statusDiscovery.status = StatusDiscovery::Status::CancelledByUser;
@@ -508,11 +509,17 @@ bool AutoDiscovery::scanCheck(AutoDiscovery* autoDiscovery)
             autoDiscovery->m_statusDiscovery.status = StatusDiscovery::Status::Terminated;
         }
         logDebug("End of discovery detected");
+
         return true;
     }
+
     // Workaround for scan blocking: Sometimes some thread with paricular address don't terminate and block indefinitively
     // the end of the scan. The detection can be made when the counter don't decrease after a timeout specified.
     // In this case, we terminate the current scan to make possible to relaunch another one.
+    static size_t previousCounter = 0;
+    static std::chrono::steady_clock::time_point start {};
+    static bool isBlockingDetected = false;
+
     size_t counter = countPendingTasks + countActiveTasks;
     if (previousCounter == counter) {
         if (!isBlockingDetected) {
@@ -540,6 +547,7 @@ bool AutoDiscovery::scanCheck(AutoDiscovery* autoDiscovery)
                     autoDiscovery->getTimeoutBlockingScan(),
                     countActiveTasks,
                     listAddressBlocked.str());
+
                 return true;
             }
         }
@@ -549,6 +557,7 @@ bool AutoDiscovery::scanCheck(AutoDiscovery* autoDiscovery)
             isBlockingDetected = false;
         }
     }
+
     return false;
 }
 
