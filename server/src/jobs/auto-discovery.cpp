@@ -558,6 +558,7 @@ bool AutoDiscovery::scanCheck(AutoDiscovery* autoDiscovery)
         }
     }
 
+    previousCounter = counter;
     return false;
 }
 
