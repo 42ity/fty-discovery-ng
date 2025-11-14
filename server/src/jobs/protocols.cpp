@@ -19,6 +19,7 @@
 #include "impl/ping.h"
 #include "impl/xml-pdc.h"
 #include "impl/snmp.h"
+
 #include <fty/string-utils.h>
 #include <fty_log.h>
 #include <netdb.h>
@@ -67,6 +68,7 @@ Expected<commands::protocols::Out> Protocols::getProtocols(const commands::proto
     }
 
     commands::protocols::Out out;
+
     // supported protocols, tokenized with default port
     // in *order* of preferences
     config_protocol_t tries[] = {
@@ -77,9 +79,10 @@ Expected<commands::protocols::Out> Protocols::getProtocols(const commands::proto
 
     // for each protocol
     for (auto& aux : tries) {
-        auto& protocol = out.append();
         std::stringstream ss;
         ss << aux.protocol;
+
+        auto& protocol = out.append();
         protocol.protocol  = ss.str();
         protocol.port      = aux.defaultPort;
         protocol.reachable = false; // default, port is not reachable
@@ -108,34 +111,34 @@ Expected<commands::protocols::Out> Protocols::getProtocols(const commands::proto
                 switch (aux.protocol) {
                     case ConfigDiscovery::Protocol::Type::Powercom: {
                         if (auto res = tryPowercom(in.address.value(), static_cast<uint16_t>(protocol.port))) {
-                            logInfo("Found Powercom device on port {}", protocol.port);
+                            logInfo("Found Powercom device on port {}", int(protocol.port));
                             protocol.reachable = true; // port is reachable
                             protocol.available = Return::Available::Yes; // port is available
                         }
                         else {
-                            logInfo("Skipped GenApi/{}, reason: {}", protocol.port.value(), res.error());
+                            logInfo("Skipped GenApi port {}, reason: {}", int(protocol.port), res.error());
                         }
                         break;
                     }
                     case ConfigDiscovery::Protocol::Type::XmlPdc: {
                         if (auto res = tryXmlPdc(in.address.value(), static_cast<uint16_t>(protocol.port))) {
-                            logInfo("Found XML device on port {}", protocol.port);
+                            logInfo("Found XML device on port {}", int(protocol.port));
                             protocol.reachable = true; // port is reachable
                             protocol.available = Return::Available::Yes; // port is available
                         }
                         else {
-                            logInfo("Skipped xml_pdc/{}, reason: {}", protocol.port.value(), res.error());
+                            logInfo("Skipped xml_pdc port {}, reason: {}", int(protocol.port), res.error());
                         }
                         break;
                     }
                     case ConfigDiscovery::Protocol::Type::Snmp: {
                         if (auto res = trySnmp(in.address.value(), static_cast<uint16_t>(protocol.port))) {
-                            logInfo("Found SNMP device on port {}", protocol.port);
+                            logInfo("Found SNMP device on port {}", int(protocol.port));
                             protocol.reachable = true; // port is reachable
                             protocol.available = Return::Available::Maybe; // port is maybe available
                         }
                         else {
-                            logInfo("Skipped SNMP/{}, reason: {}", protocol.port.value(), res.error());
+                            logInfo("Skipped SNMP port {}, reason: {}", int(protocol.port), res.error());
                         }
                         break;
                     }
@@ -167,7 +170,7 @@ void Protocols::run(const commands::protocols::In& in, commands::protocols::Out&
 
 Expected<void> Protocols::tryXmlPdc(const std::string& address, uint16_t port) const
 {
-    logDebug("Protocols::tryXmlPdc {}:{}", address, port);
+    logDebug("Protocols::tryXmlPdc {}:{}", address, int(port));
 
     impl::XmlPdc xml("http", address, port);
     if (auto prod = xml.get<impl::ProductInfo>("product.xml")) {
@@ -191,7 +194,7 @@ Expected<void> Protocols::tryXmlPdc(const std::string& address, uint16_t port) c
 
 Expected<void> Protocols::tryPowercom(const std::string& address, uint16_t port) const
 {
-    logDebug("Protocols::tryPowercom {}:{}", address, port);
+    logDebug("Protocols::tryPowercom {}:{}", address, int(port));
 
     neon::Neon ne("https", address, port);
     if (auto content = ne.get("etn/v1/comm/services/powerdistributions1")) {
@@ -205,7 +208,6 @@ Expected<void> Protocols::tryPowercom(const std::string& address, uint16_t port)
             if (deviceType == "ats") {
                 return {};
             }
-
             if (deviceType == "pdu") {
                 return {};
             }
@@ -264,7 +266,7 @@ struct AutoRemove
 
 Expected<void> Protocols::trySnmp(const std::string& address, uint16_t port) const
 {
-    logDebug("Protocols::trySnmp {}:{}", address, port);
+    logDebug("Protocols::trySnmp {}:{}", address, int(port));
 
     // fast check (no timeout, quite unreliable)
     // connect with a DGRAM socket, multiple tries to write in, check errors

@@ -15,9 +15,11 @@
 */
 
 #pragma once
+
 #include "discovery-task.h"
 #include "create-asset.h"
 #include <fty/thread-pool.h>
+#include <cstdint>
 
 // =====================================================================================================================
 
@@ -62,7 +64,7 @@ public:
     void statusDiscoveryInit();
     void statusDiscoveryReset(uint32_t numOfAddress);
     void updateStatusDiscoveryCounters(const std::string& deviceSubType);
-    void updateStatusDiscoveryProgress(const std::string &ipAddress = "");
+    void updateStatusDiscoveryProgress(const std::string& ipAddress = "");
 
     // Scan node(s)
     static void scan(AutoDiscovery* autoDiscovery, const std::string& ipAddress);

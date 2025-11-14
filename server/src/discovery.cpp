@@ -29,6 +29,7 @@
 #include "jobs/scan-start.h"
 #include "jobs/scan-status.h"
 #include "jobs/scan-stop.h"
+
 #include <fty/thread-pool.h>
 #include <fty_log.h>
 
@@ -58,8 +59,9 @@ bool Discovery::loadConfig()
 
 Expected<void> Discovery::init()
 {
-    logDebug("Discovery::init actorName={} endpoint={}", Config::instance().actorName.value(),
-                                                         Config::instance().endpoint.value());
+    logDebug("Discovery::init actorName={} endpoint={}",
+        Config::instance().actorName.value(), Config::instance().endpoint.value());
+
     if (auto init = m_bus.init(Config::instance().actorName.value(), Config::instance().endpoint.value())) {
         if (auto sub = m_bus.subsribe(Channel, &Discovery::discover, this)) {
             if (auto autoInit = m_autoDiscovery.init(); !autoInit) {
@@ -92,6 +94,7 @@ void Discovery::discover(const disco::Message& msg)
 {
     logDebug("Discovery: got message {}", msg.dump());
     logDebug("Payload: {}", msg.userData.asString());
+
     if (msg.meta.subject == commands::protocols::Subject) {
         m_pool.pushWorker<job::Protocols>(msg, m_bus);
     } else if (msg.meta.subject == commands::mibs::Subject) {

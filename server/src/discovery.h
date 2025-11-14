@@ -20,8 +20,10 @@
  */
 
 #pragma once
+
 #include "message-bus.h"
 #include "jobs/auto-discovery.h"
+
 #include <fty/event.h>
 #include <fty/thread-pool.h>
 #include <string>

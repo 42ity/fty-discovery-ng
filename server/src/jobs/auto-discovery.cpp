@@ -20,6 +20,7 @@
 #include "protocols.h"
 #include "src/config.h"
 #include "impl/address.h"
+
 #include <asset/asset-manager.h>
 #include <string>
 #include <sys/types.h>
@@ -285,7 +286,7 @@ void AutoDiscovery::scan(AutoDiscovery* autoDiscovery, const std::string& ipAddr
             commands::assets::Out outAsset;
 
             if (auto getAssetsRes = assets.getAssets(inAsset, outAsset); !getAssetsRes) {
-                logError(getAssetsRes.error().c_str());
+                logError("{}", getAssetsRes.error());
                 return false;
             }
 
@@ -419,13 +420,13 @@ void AutoDiscovery::scan(AutoDiscovery* autoDiscovery, const std::string& ipAddr
         Protocols protocols;
         auto listProtocols = protocols.getProtocols(inProt);
         if (!listProtocols) {
-            logError(listProtocols.error());
+            logError("{}", listProtocols.error());
             // Update progress
             autoDiscovery->updateStatusDiscoveryProgress(ipAddress);
             return;
         }
         if (auto listStr = pack::json::serialize(*listProtocols, pack::Option::WithDefaults)) {
-            logDebug("Found protocols for {}:\n{}", ipAddress, *listStr);
+            logDebug("Found protocols for {}: {}", ipAddress, *listStr);
         }
 
         bool found = false;
@@ -435,7 +436,6 @@ void AutoDiscovery::scan(AutoDiscovery* autoDiscovery, const std::string& ipAddr
         for (const auto& elt : *listProtocols) {
             // if the current protocol is reachable
             if (elt.reachable) {
-
                 commands::assets::In inAsset;
                 inAsset.address = ipAddress;
                 inAsset.protocol = elt.protocol;
@@ -448,8 +448,7 @@ void AutoDiscovery::scan(AutoDiscovery* autoDiscovery, const std::string& ipAddr
 
                 // If XML protocol for NMC card, try to discovery the asset directly (no need credentials)
                 if (elt.protocol == "nut_xml_pdc") {
-
-                    logInfo("Try with protocol/port ({}/{}) for {}", elt.protocol, elt.port, ipAddress);
+                    logInfo("Try with protocol/port ({}/{}) for {}", elt.protocol, int(elt.port), ipAddress);
                     inAsset.settings.credentialId = "";
                     found = doScan(elt, inAsset);
                 }
@@ -461,7 +460,7 @@ void AutoDiscovery::scan(AutoDiscovery* autoDiscovery, const std::string& ipAddr
 
                     // For each credential
                     for (const auto& doc : documents) {
-                        logInfo("Try with protocol/port/credential ({}/{}/{}) for {}", elt.protocol, elt.port, doc, ipAddress);
+                        logInfo("Try with protocol/port/credential ({}/{}/{}) for {}", elt.protocol, int(elt.port), doc, ipAddress);
                         inAsset.settings.credentialId = doc;
                         found = doScan(elt, inAsset);
                         if (found) {
@@ -478,8 +477,8 @@ void AutoDiscovery::scan(AutoDiscovery* autoDiscovery, const std::string& ipAddr
             }
         }
     }
-    catch (std::exception& ex) {
-        logError(ex.what());
+    catch (const std::exception& e) {
+        logError("{}", e.what());
     }
 
     // Update progress

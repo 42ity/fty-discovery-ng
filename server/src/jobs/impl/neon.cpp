@@ -15,6 +15,7 @@
 */
 
 #include "neon.h"
+
 #include <fty/string-utils.h>
 #include <fty_log.h>
 #include <iostream>
@@ -75,17 +76,22 @@ fty::Expected<std::string> Neon::get(const std::string& path) const
     do {
         int  stat   = ne_begin_request(request);
         auto status = ne_get_status(request);
+        // CAUTION: status->reason_phrase (char*) can be malformed - don't use it!
         if (stat != NE_OK) {
             ne_request_destroy(request);
             if (!status->code) {
-                return fty::unexpected(ne_get_error(m_session));
+                auto s = ne_get_error(m_session);
+                const std::string err{s ? s : "NULL"};
+                return fty::unexpected(err);
             }
-            return fty::unexpected("non-NE_OK, status: {} {}", status->code, status->reason_phrase);
+            else {
+                return fty::unexpected("non-NE_OK, status: {}", int(status->code));
+            }
         }
 
         if (status->code != 200) {
             ne_request_destroy(request);
-            return fty::unexpected("NE_OK, status: {} {}", status->code, status->reason_phrase);
+            return fty::unexpected("NE_OK, status: {}", int(status->code));
         }
 
         body.clear();

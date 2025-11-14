@@ -32,6 +32,16 @@ make
 
 To run unit test go to `build/test` subdirectory and run `fty-discovery-ng-tests`
 
+## How to debug
+
+To debug with gdb (systemd service must be disable and stopped)
+
+```CMake
+cd build
+cmake -DCMAKE_BUILD_TYPE=DEBUG ..
+make && gdb -ex run --args ./server/fty-discovery-ng --config=/etc/fty-discovery-ng/discovery.conf
+```
+
 ## How to run agent
 
 ```

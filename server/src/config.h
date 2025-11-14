@@ -20,6 +20,7 @@
  */
 
 #pragma once
+
 #include <pack/pack.h>
 
 namespace fty::disco {

@@ -1,10 +1,10 @@
 #include "test-common.h"
+
 #include <fty/process.h>
 #include <fty_log.h>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
-
 
 TEST_CASE("Assets / Empty request", "[assets]")
 {
