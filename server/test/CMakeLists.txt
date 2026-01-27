@@ -12,13 +12,13 @@ etn_test_target(${PROJECT_NAME}-static
     SOURCES
         main.cpp
         assets.cpp
+        address.cpp
         protocols.cpp
         mibs.cpp
-        address.cpp
         auto-disco.cpp
+        discovery-config-manager.cpp
         test-common.cpp
         test-common.h
-        discovery-config-manager.cpp
     USES
         ${PROJECT_NAME}-static
         Catch2::Catch2

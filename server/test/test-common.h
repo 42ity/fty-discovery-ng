@@ -6,7 +6,6 @@
 #include "src/config.h"
 #include "src/discovery.h"
 #include "src/jobs/impl/snmp.h"
-#include <catch2/catch.hpp>
 #include <fty_log.h>
 #include <thread>
 #include <malamute.h>

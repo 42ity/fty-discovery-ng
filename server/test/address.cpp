@@ -1,4 +1,6 @@
+#include <catch2/catch.hpp>
 #include "test-common.h"
+
 #include "../server/src/jobs/impl/address.h"
 
 TEST_CASE("Address / iteration", "[address]")

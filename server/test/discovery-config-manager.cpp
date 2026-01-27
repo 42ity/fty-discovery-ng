@@ -1,9 +1,9 @@
 #include "discovery-config-manager.h"
 #include "discovery-config.h"
 #include <catch2/catch.hpp>
+
 #include <iostream>
 #include <pack/serialization.h>
-
 
 TEST_CASE("Config manager load")
 {

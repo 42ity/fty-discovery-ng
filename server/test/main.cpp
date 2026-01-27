@@ -1,8 +1,8 @@
 #define CATCH_CONFIG_RUNNER
 #define CATCH_CONFIG_DISABLE_EXCEPTIONS
+#include <catch2/catch.hpp>
 
 #include "test-common.h"
-#include <catch2/catch.hpp>
 #include <chrono>
 #include <thread>
 
