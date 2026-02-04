@@ -3,16 +3,16 @@
 Since IPM 2.8.4 on Debian 13, which includes Python 3.13,
 the snmpsim package (snmpsimd process) has lost its compatibility with Python 3 due to the removal of deprecated features.
 
-Calls to /usr/bin/snmpsimd consistently fail with an ImportError or ModuleNotFound exception.
+Calls to /usr/bin/snmpsimd consistently fail with an `ImportError` or `ModuleNotFound` exception.
 
-To test, simply try "/usr/bin/snmpsimd --version"...
+To check, simply try `/usr/bin/snmpsimd --version`...
 
 The use of the snmpsim process by UT has been disabled.
-Search for DEACT-2.8.5-DEB13 tag in code...
+Search for `DEACT-2.8.5-DEB13` tag in code...
 
 ## Use snmpsim under python3 virtual environment
 
-See https://docs.lextudio.com/snmp/#
+See `https://docs.lextudio.com/snmp/#`
 
 new snmpsim python3 package
 
@@ -26,7 +26,7 @@ $> source ./env/bin/activate
 deazctivate
 ```
 
-## change UT code (snmpsim process definition)
+## Change UT code (snmpsim process definition)
 
 ```cpp
     fty::Process proc("snmpsimd", {
@@ -45,5 +45,6 @@ by
         "--data-dir=root",
     });
 ```
-Notice: data-dir argument can be 'assets'.
+
+Notice: `--data-dir` argument can be `assets`.
 
