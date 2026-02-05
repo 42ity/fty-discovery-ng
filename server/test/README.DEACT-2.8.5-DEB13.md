@@ -22,11 +22,16 @@ $> python3 -m venv ./env
 $> source ./env/bin/activate
 (env)$> pip install snmpsim
 (env)$> snmpsim-command-responder --version
+(env)$> cd build/
+(env)$> cmake ..
+(env)$> make && ctest
 ...
-deazctivate
+(env)$> deactivate
 ```
 
-## Change UT code (snmpsim process definition)
+## UT code changes (snmpsim process definition)
+
+snmpsimd process definitions
 
 ```cpp
     fty::Process proc("snmpsimd", {
@@ -38,13 +43,17 @@ deazctivate
         "--process-group=nogroup",
     });
 ```
-by
+
+shall be replaced by
 
 ```cpp
     fty::Process proc("snmpsim-command-responder", {
         "--data-dir=root",
+        "--agent-udpv4-endpoint=127.0.0.1:1161",
+        "--logging-method=file:.snmpsim.txt",
+        "--variation-modules-dir=root",
     });
 ```
 
-Notice: `--data-dir` argument can be `assets`.
+Notice: `--data-dir` and `--variation-modules-dir` arguments can be `assets`.
 
