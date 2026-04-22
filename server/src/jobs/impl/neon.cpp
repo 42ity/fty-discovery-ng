@@ -272,7 +272,6 @@ private:
     static int endEl(void* userdata, int /*state*/, const char* /*nspace*/, [[maybe_unused]] const char* name)
     {
         Parser* self = reinterpret_cast<Parser*>(userdata);
-        assert(self->m_current->name == name);
 
         self->m_current = self->m_current->parent;
         return NE_XML_STATEROOT;
